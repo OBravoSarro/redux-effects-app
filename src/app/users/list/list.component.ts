@@ -1,24 +1,33 @@
-import { Component, OnDestroy } from '@angular/core';
-import { UserService } from '../../services/user.service';
-import { User } from '../../models/user.model';
-import { Subscription } from 'rxjs';
+import { Component } from '@angular/core';
+import { RootState } from 'src/app/store/root.state';
+import { Store } from '@ngrx/store';
+import { SetUserList } from '../../store/user-list/user-list.actions';
+import { UserListState } from '../../store/user-list/user-list.state';
+import { User } from 'src/app/models/user.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-list',
-  templateUrl: './list.component.html',
-  styles: []
+  templateUrl: './list.component.html'
 })
-export class ListComponent implements OnDestroy {
+export class ListComponent {
 
-  public users: User[] = [];
-  private userSubscription: Subscription = new Subscription();
+  public userList: User[];
+  public loading: boolean;
+  public error: any;
 
-  constructor(private _user: UserService) {
-    this.userSubscription = this._user.getUserList().subscribe((users: User[]) => this.users = users);
+  constructor(private store: Store<RootState>, private router: Router) {
+    this.store.dispatch(new SetUserList());
+    this.store.select('userList').subscribe((userList: UserListState) => {
+      this.userList = userList.users;
+      this.loading = userList.loading;
+      this.error = userList.error;
+    });
   }
 
-  ngOnDestroy() {
-    this.userSubscription.unsubscribe();
+  public goToDetail(userId: number) {
+    console.log('EMNTRA');
+    this.router.navigate(['user', userId]);
   }
 
 }
